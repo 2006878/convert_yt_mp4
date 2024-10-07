@@ -19,13 +19,13 @@ mutagen==1.47.0
 narwhals==1.9.1
 numpy==2.0.2
 packaging==24.1
-ffmpeg==1.4
 pandas==2.2.3
 pillow==10.4.0
 protobuf==5.28.2
 pyarrow==17.0.0
 pycryptodomex==3.21.0
 pydeck==0.9.1
+pydub==0.25.1
 pygments==2.18.0
 python-dateutil==2.9.0.post0
 pytz==2024.2
