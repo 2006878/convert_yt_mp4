@@ -11,38 +11,34 @@ def is_valid_youtube_url(url):
         return True
     return False
 
-# Função para listar formatos disponíveis
-def list_formats(youtube_url):
+# Função para converter vídeo do YouTube para MP3
+def convert_youtube_to_mp3(youtube_url):
+    mp3_filename = None
     try:
-        with yt_dlp.YoutubeDL() as ydl:
-            info = ydl.extract_info(youtube_url, download=False)
-            formats = info.get('formats', [])
-            return formats
-    except Exception as e:
-        st.error(f"Erro ao listar formatos: {str(e)}")
-        return []
-
-# Função para converter vídeo do YouTube para MP4
-def convert_youtube_to_mp4(youtube_url, format_id):
-    mp4_filename = None
-    try:
-        st.info(f"Baixando o vídeo do URL: {youtube_url}")
+        st.info(f"Baixando o áudio do URL: {youtube_url}")
         ydl_opts = {
-            'format': format_id,  # formato selecionado pelo usuário
+            'format': 'bestaudio/best',  # Baixa o melhor áudio disponível
             'outtmpl': '%(title)s.%(ext)s',
+            'postprocessors': [{
+                'key': 'FFmpegExtractAudio',
+                'preferredcodec': 'mp3',
+                'preferredquality': '192',  # Qualidade do áudio (pode ajustar)
+            }],
         }
         
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([youtube_url])
             info = ydl.extract_info(youtube_url, download=False)
-            mp4_filename = ydl.prepare_filename(info)
+            mp3_filename = ydl.prepare_filename(info).rsplit(".", 1)[0] + ".mp3"  # Salva como MP3
         
-        st.success(f"Vídeo baixado com sucesso: {mp4_filename}")
-        return mp4_filename
+        st.success(f"Áudio MP3 baixado com sucesso: {mp3_filename}")
+        return mp3_filename
 
     except Exception as e:
-        st.error(f"Erro ao converter vídeo: {str(e)}")
+        st.error(f"Erro ao converter vídeo para MP3: {str(e)}")
         return None
+
+# Interface Streamlit
 
 # Carreguando o ícone da aba
 favicon = "img/mp4_icon.png"
@@ -60,34 +56,20 @@ banner_image = os.path.join(current_dir, "img", "Make-A-YouTube-Video.jpg")
 st.image(banner_image, use_column_width=True)
 
 # Interface Streamlit
-st.title("Conversor de YouTube para MP4")
+st.title("Extrator de Áudio MP3 do YouTube")
 
 youtube_url = st.text_input("Digite a URL do vídeo do YouTube")
 
+# Quando o usuário insere uma URL válida, o áudio é baixado automaticamente
 if youtube_url:
     if is_valid_youtube_url(youtube_url):
-        if 'formats' not in st.session_state:
-            st.session_state['formats'] = list_formats(youtube_url)
-
-        formats = st.session_state['formats']
-        if formats:
-            format_options = {f"{fmt['format']} ({fmt['ext']}, {fmt.get('resolution', 'N/A')})": fmt['format_id'] for fmt in formats}
-            format_choice = st.selectbox("Escolha um formato", list(format_options.keys()))
-
-            if 'format_id' not in st.session_state or st.session_state['format_id'] != format_choice:
-                st.session_state['format_id'] = format_options[format_choice]
-
-            if st.button("Converter para MP4"):
-                format_id = st.session_state.get('format_id', 'best')
-                mp4_filename = convert_youtube_to_mp4(youtube_url, format_id)
-                if mp4_filename and os.path.exists(mp4_filename):
-                    with open(mp4_filename, "rb") as f:
-                        st.download_button("Baixar MP4", f, file_name=os.path.basename(mp4_filename))
-                    st.info(f"Limpando arquivo: {mp4_filename}")
-                    os.remove(mp4_filename)  # Remove o arquivo local após o download
-                else:
-                    st.error("Falha ao localizar o arquivo baixado.")
+        mp3_filename = convert_youtube_to_mp3(youtube_url)
+        if mp3_filename and os.path.exists(mp3_filename):
+            with open(mp3_filename, "rb") as f:
+                st.download_button("Baixar MP3", f, file_name=os.path.basename(mp3_filename))
+            st.info(f"Limpando arquivo: {mp3_filename}")
+            os.remove(mp3_filename)  # Remove o arquivo local após o download
         else:
-            st.error("Nenhum formato disponível para o vídeo.")
+            st.error("Falha ao localizar o arquivo baixado.")
     else:
         st.error("URL do YouTube inválida. Verifique e tente novamente.")
