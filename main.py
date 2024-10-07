@@ -2,6 +2,14 @@ import streamlit as st
 import yt_dlp
 import os
 import re
+import subprocess
+
+# Instala o FFmpeg no ambiente do Streamlit
+def install_ffmpeg():
+    try:
+        subprocess.run(['apt-get', 'install', '-y', 'ffmpeg'], check=True)
+    except subprocess.CalledProcessError as e:
+        st.error(f"Erro ao instalar o FFmpeg: {e}")
 
 # Função para validar URL do YouTube
 def is_valid_youtube_url(url):
@@ -53,6 +61,9 @@ st.image(banner_image, use_column_width=True)
 
 # Interface Streamlit
 st.title("Extrator de Áudio MP3 do YouTube")
+
+# Instala o FFmpeg
+install_ffmpeg()
 
 # Entrada de URL do YouTube
 youtube_url = st.text_input("Digite a URL do vídeo do YouTube")
