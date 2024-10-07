@@ -38,13 +38,8 @@ def convert_youtube_to_mp3(youtube_url):
         st.error(f"Erro ao converter vídeo para MP3: {e}")
     return mp3_filename
 
-
-# Interface Streamlit
-
-# Carreguando o ícone da aba
-favicon = "img/mp4_icon.png"
-
 # Configurações da página Streamlit
+favicon = "img/mp4_icon.png"
 st.set_page_config(page_title="Conversor de YouTube para MP4", page_icon=favicon)
 
 # Caminho absoluto para o diretório atual
