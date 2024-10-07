@@ -2,7 +2,6 @@ import streamlit as st
 import yt_dlp
 import os
 import re
-import subprocess
 
 # Função para validar URL do YouTube
 def is_valid_youtube_url(url):
@@ -17,19 +16,21 @@ def convert_youtube_to_mp3(youtube_url):
     mp3_filename = None
     try:
         st.info(f"Baixando o áudio do URL: {youtube_url}")
+        
+        # Substitua pelo caminho completo para o FFmpeg no seu sistema
+        ffmpeg_path = "/usr/bin/ffmpeg"  # Linux
+        # ffmpeg_path = "C:/caminho/para/ffmpeg.exe"  # Windows (alterar para o seu caminho correto)
+
         ydl_opts = {
             'format': 'bestaudio/best',  # Baixa o melhor áudio disponível
             'outtmpl': '%(title)s.%(ext)s',
+            'ffmpeg_location': ffmpeg_path,  # Especifica o caminho do ffmpeg
             'postprocessors': [{
                 'key': 'FFmpegExtractAudio',
                 'preferredcodec': 'mp3',
                 'preferredquality': '192',
-                'nopostoverwrites': False,
             }],
         }
-        
-        # Configura o caminho do FFmpeg usando variáveis de ambiente
-        os.environ['PATH'] += os.pathsep + '/usr/bin'
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info_dict = ydl.extract_info(youtube_url, download=True)
@@ -54,7 +55,6 @@ st.image(banner_image, use_column_width=True)
 
 # Interface Streamlit
 st.title("Extrator de Áudio MP3 do YouTube")
-
 
 # Entrada de URL do YouTube
 youtube_url = st.text_input("Digite a URL do vídeo do YouTube")
