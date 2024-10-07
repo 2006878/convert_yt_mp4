@@ -22,21 +22,22 @@ def convert_youtube_to_mp3(youtube_url):
             'postprocessors': [{
                 'key': 'FFmpegExtractAudio',
                 'preferredcodec': 'mp3',
-                'preferredquality': '192',  # Qualidade do áudio (pode ajustar)
+                'preferredquality': '192',
+                'nopostoverwrites': False,
             }],
         }
         
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            ydl.download([youtube_url])
-            info = ydl.extract_info(youtube_url, download=False)
-            mp3_filename = ydl.prepare_filename(info).rsplit(".", 1)[0] + ".mp3"  # Salva como MP3
-        
-        st.success(f"Áudio MP3 baixado com sucesso: {mp3_filename}")
-        return mp3_filename
+        # Configura o caminho do FFmpeg usando variáveis de ambiente
+        os.environ['PATH'] += os.pathsep + '/usr/bin'
 
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info_dict = ydl.extract_info(youtube_url, download=True)
+            mp3_filename = ydl.prepare_filename(info_dict).replace('.webm', '.mp3').replace('.m4a', '.mp3')
+        st.success(f"Download concluído: {mp3_filename}")
     except Exception as e:
-        st.error(f"Erro ao converter vídeo para MP3: {str(e)}")
-        return None
+        st.error(f"Erro ao converter vídeo para MP3: {e}")
+    return mp3_filename
+
 
 # Interface Streamlit
 
@@ -58,6 +59,7 @@ st.image(banner_image, use_column_width=True)
 # Interface Streamlit
 st.title("Extrator de Áudio MP3 do YouTube")
 
+# Entrada de URL do YouTube
 youtube_url = st.text_input("Digite a URL do vídeo do YouTube")
 
 # Quando o usuário insere uma URL válida, o áudio é baixado automaticamente
